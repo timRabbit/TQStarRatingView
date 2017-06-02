@@ -12,6 +12,7 @@
 
 @property (nonatomic, strong) UIView *starBackgroundView;
 @property (nonatomic, strong) UIView *starForegroundView;
+@property (nonatomic, assign) CGRect useFrame;
 
 @end
 
@@ -54,8 +55,20 @@
     self.starForegroundView = [self buidlStarViewWithImageName:kFOREGROUND_STAR];
     [self addSubview:self.starBackgroundView];
     [self addSubview:self.starForegroundView];
+    
+    self.useFrame = self.starBackgroundView.frame;
+    
 }
-
+-(void)setItemSpace:(CGFloat)itemSpace
+{
+    _itemSpace = itemSpace;
+    
+    [self.starBackgroundView removeFromSuperview];
+    [self.starForegroundView removeFromSuperview];
+    
+    [self commonInit];
+    
+}
 #pragma mark -
 #pragma mark - Set Score
 
@@ -89,7 +102,7 @@
         score = 1;
     }
     
-    CGPoint point = CGPointMake(score * self.frame.size.width, 0);
+    CGPoint point = CGPointMake(score * self.useFrame.size.width, 0);
     
     if(isAnimate){
         __weak __typeof(self)weakSelf = self;
@@ -112,7 +125,7 @@
 {
     UITouch *touch = [touches anyObject];
     CGPoint point = [touch locationInView:self];
-    CGRect rect = CGRectMake(0, 0, self.frame.size.width, self.frame.size.height);
+    CGRect rect = CGRectMake(0, 0, self.useFrame.size.width, self.useFrame.size.height);
     if(CGRectContainsPoint(rect,point)){
         [self changeStarForegroundViewWithPoint:point];
     }
@@ -146,10 +159,17 @@
     view.clipsToBounds = YES;
     for (int i = 0; i < self.numberOfStar; i ++){
         UIImageView *imageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:imageName]];
-        imageView.frame = CGRectMake(i * frame.size.width / self.numberOfStar, 0, frame.size.width / self.numberOfStar, frame.size.height);
+//        imageView.frame = CGRectMake(i * frame.size.width / self.numberOfStar, 0, frame.size.width / self.numberOfStar, frame.size.height);
+
+        imageView.frame = CGRectMake(   self.itemSpace/2 * (2 *i+1)  +  ( i  ) * frame.size.height  , 0, frame.size.height , frame.size.height);
+
         [view addSubview:imageView];
+        
     }
+    view.mj_w =  ( self.itemSpace * self.numberOfStar ) +  ( self.numberOfStar ) * frame.size.height;
+    
     return view;
+    
 }
 
 #pragma mark -
@@ -168,14 +188,31 @@
         p.x = 0;
     }
     
-    if (p.x > self.frame.size.width){
-        p.x = self.frame.size.width;
+    if (p.x > self.useFrame.size.width){
+        p.x = self.useFrame.size.width;
     }
     
-    NSString * str = [NSString stringWithFormat:@"%0.2f",p.x / self.frame.size.width];
+    if(self.wholeNumber){
+        ///整数
+        NSInteger everyWidth = self.useFrame.size.width / self.numberOfStar;
+        if ( (NSInteger)p.x % everyWidth > 1 ) {
+            p.x = ((NSInteger)p.x / everyWidth + 1) *everyWidth ;
+        }else{
+            p.x = (NSInteger)p.x / everyWidth *everyWidth   ;
+            
+        }
+        
+        if (p.x > self.useFrame.size.width){
+            p.x = self.useFrame.size.width;
+        }
+        
+    }
+    
+    
+    NSString * str = [NSString stringWithFormat:@"%0.2f",p.x / self.useFrame.size.width];
     float score = [str floatValue];
-    p.x = score * self.frame.size.width;
-    self.starForegroundView.frame = CGRectMake(0, 0, p.x, self.frame.size.height);
+    p.x = score * self.useFrame.size.width;
+    self.starForegroundView.frame = CGRectMake(0, 0, p.x, self.useFrame.size.height);
     
     if(self.delegate && [self.delegate respondsToSelector:@selector(starRatingView: score:)]){
         [self.delegate starRatingView:self score:score];

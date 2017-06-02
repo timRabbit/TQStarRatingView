@@ -24,6 +24,8 @@
 @interface TQStarRatingView : UIView
 
 @property (nonatomic, readonly) int numberOfStar;
+@property (nonatomic, assign) CGFloat itemSpace;///间距
+@property (nonatomic, assign) BOOL wholeNumber;///整数
 @property (nonatomic, weak) id <StarRatingViewDelegate> delegate;
 
 /**
